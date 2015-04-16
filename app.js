@@ -78,7 +78,7 @@ function multipart() {
     return multer({
         dest: "./uploads",
         rename: function (fieldname, filename) {
-            console.log(rename);
+            console.log("rename", filename);
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
@@ -98,7 +98,7 @@ function multipart() {
                     images: []
                 };
             }
-            console.log(data[req.query.key]);
+            console.log("onFileUploadComplete", data[req.query.key]);
             data[req.query.key].images.push(path.basename(file.path));
         }
     });
