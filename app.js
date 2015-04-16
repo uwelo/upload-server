@@ -2,11 +2,13 @@
 var express = require("express");
 var bodyParser = require("body-parser");
 var multer = require("multer");
-var uid = require("uid");
 var fs = require("fs");
 var path = require("path");
 var app = express();
+var moment = require("moment");
 var data = {};
+
+moment.locale("de");
 
 //static root
 app.use(express.static("uploads"));
@@ -22,7 +24,9 @@ app.use(function(req, res, next) {
 });
 
 // multipart upload
-app.use("/upload", setUploadFolder);
+app.use("/upload", function setUploadFolder(req, res, next) {
+    next();
+});
 app.use(multipart());
 app.post("/upload", saveData);
 
@@ -61,19 +65,12 @@ app.delete("/uploads/:key", function (req, res) {
 start();
 
 
-function setUploadFolder(req, res, next) {
-    if (req.query.vin) {
-        req.uid = req.query.vin;
-    } else {
-        req.uid =  uid(10);
-    }
-    next();
-}
+
 
 function saveData(req, res) {
     fs.writeFile("data.json", JSON.stringify(data), function (err) {
         if (err) {
-            res.send("couldn't save data.json");
+            res.send("error saving data.json");
         }
         res.redirect("back");
     });
@@ -87,17 +84,22 @@ function multipart() {
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
-            var changedDest = path.join(dest, req.uid);
+            var changedDest = path.join(dest, req.query.key);
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
             }
             return changedDest;
         },
         onFileUploadComplete: function (file, req) {
-            if (!data[req.uid]) {
-                data[req.uid] = [];
+            if (!data[req.query.key]) {
+                data[req.query.key] = {
+                    vin: req.query.vin,
+                    folder: req.query.key,
+                    time: req.query.time,
+                    images: []
+                };
             }
-            data[req.uid].push(path.basename(file.path));
+            data[req.query.key].images.push(path.basename(file.path));
         }
     });
 }
@@ -105,14 +107,14 @@ function multipart() {
 function start() {
     fs.readFile("data.json", function (err, filedata) {
         if (err) {
-            console.log("couldn't read data.json", err);
+            console.log("error reading data.json", err);
         }
 
         try {
             data = JSON.parse(filedata);
             startServer();
         } catch (e) {
-            console.log("couldn't parse data.json", e);
+            console.log("error parsing data.json", e);
         }
     });
 }
