@@ -24,10 +24,6 @@ app.use(function(req, res, next) {
 });
 
 // multipart upload
-app.use("/upload", function setUploadFolder(req, res, next) {
-    console.log(req);
-    next();
-});
 app.use(multipart());
 app.post("/upload", saveData);
 
@@ -82,10 +78,12 @@ function multipart() {
     return multer({
         dest: "./uploads",
         rename: function (fieldname, filename) {
+            console.log(rename);
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
             var changedDest = path.join(dest, req.query.key);
+            console.log(changedDest);
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
             }
@@ -100,6 +98,7 @@ function multipart() {
                     images: []
                 };
             }
+            console.log(data[req.query.key]);
             data[req.query.key].images.push(path.basename(file.path));
         }
     });
