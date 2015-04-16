@@ -30,8 +30,25 @@ app.get("/", function (req, res) {
 app.get("/uploads/", function (req, res) {
     res.send(data);
 });
+
 app.get("/uploads/:key", function (req, res) {
     res.send(data[req.params.key] || {});
+});
+
+// delete uploaded files
+app.delete("/uploads/", function (req, res) {
+    data = {};
+    
+    res.send(data);
+});
+
+// delete uploaded files
+app.delete("/uploads/:key", function (req, res) {
+    if (data[req.params.key]) {
+        delete data[req.params.key];
+    }
+
+    res.send(data);
 });
 
 
