@@ -25,6 +25,7 @@ app.use(function(req, res, next) {
 
 // multipart upload
 app.use("/upload", function setUploadFolder(req, res, next) {
+    console.log(req);
     next();
 });
 app.use(multipart());
