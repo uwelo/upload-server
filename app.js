@@ -1,4 +1,4 @@
-/*global -W024 */
+/*jshint -W024 */
 var express = require("express");
 var bodyParser = require("body-parser");
 var multer = require("multer");
@@ -14,6 +14,12 @@ app.use(express.static("uploads"));
 app.use(bodyParser.json());
 // for parsing application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.all("/", function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+});
 
 // multipart upload
 app.use("/upload", setUploadFolder);
@@ -38,7 +44,7 @@ app.get("/uploads/:key", function (req, res) {
 // delete uploaded files
 app.delete("/uploads/", function (req, res) {
     data = {};
-    
+
     res.send(data);
 });
 
@@ -84,7 +90,7 @@ function multipart() {
             var changedDest = path.join(dest, req.uid);
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
-            };
+            }
             return changedDest;
         },
         onFileUploadComplete: function (file, req) {
