@@ -20,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+
     next();
 });
 
@@ -78,18 +79,18 @@ function multipart() {
     return multer({
         dest: "./uploads",
         rename: function (fieldname, filename) {
-            console.log("rename", filename);
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
             var changedDest = path.join(dest, req.query.key);
-            console.log(changedDest);
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
             }
             return changedDest;
         },
         onFileUploadComplete: function (file, req) {
+            console.log(req.query);
+            console.log(req.body);
             if (!data[req.query.key]) {
                 data[req.query.key] = {
                     vin: req.query.vin,
@@ -98,7 +99,6 @@ function multipart() {
                     images: []
                 };
             }
-            console.log("onFileUploadComplete", data[req.query.key]);
             data[req.query.key].images.push(path.basename(file.path));
         }
     });
