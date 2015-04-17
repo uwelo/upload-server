@@ -88,7 +88,7 @@ app.get("/key/:key", function (req, res) {
 });
 
 app.delete("/key/:key", function (req, res) {
-    delete data[key];
+    delete data[req.params.key];
     save(res, data);
 });
 
