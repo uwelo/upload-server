@@ -7,29 +7,27 @@
 
 <body>
     <form method="post" action="upload" enctype="multipart/form-data">
-    <input type="file" name="fileUploaded" multiple>
-    <label>Vin</label>
-    <input id="vin" type="text" name="vin">
-    <input id="submit" type="submit">
+        <input type="file" name="fileUploaded" multiple>
+        <input id="submit" type="submit">
+    </form>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+        function uid(len) {
+            len = len || 7;
+            return Math.random().toString(35).substr(2, len);
+        };
+
+        var params = [];
+
+        params.push("vin=" + uid(15));
+        params.push("key=" + uid(10));
+        params.push("time=" + Date.now());
 
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-        <script>
-            function uid(len) {
-                len = len || 7;
-                return Math.random().toString(35).substr(2, len);
-            };
-
-            var params = [];
-
-            params.push("vin=" + $("#vin").val());
-            params.push("key=" + uid(10));
-            params.push("time=" + Date.now());
-
-
-            $("#submit").on("click", function () {
-                $("form").attr("action", $("form").attr("action") + "?" + params.join("&"));
-            });
-        </script>
+        $("#submit").on("click", function () {
+            $("form").attr("action", $("form").attr("action") + "?" + params.join("&"));
+        });
+    </script>
  </body>
 </html>

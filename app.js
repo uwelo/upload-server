@@ -36,70 +36,87 @@ app.get("/", function (req, res) {
 
 // get uploaded files
 app.get("/uploads/", function (req, res) {
-    res.send(data);
+    res.send(Object.keys(data).sort(sortByTimestamp).map(function (item) {
+        return data[item];
+    }));
 });
 
-app.get("/uploads/:key", function (req, res) {
-    res.send(data[req.params.key] || {});
+app.get("/vin/:vin", function (req, res) {
+    res.send(Object.keys(data)
+        .map(function (item) {
+            return data[item];
+        })
+        .filter(function (item) {
+            return item.vin === req.params.vin;
+        }
+    ));
+});
+
+app.get("/key/:key", function (req, res) {
+    res.send(Object.keys(data)
+        .map(function (item) {
+            return data[item];
+        })
+        .filter(function (item) {
+            return item.key === req.params.key;
+        }
+    ));
 });
 
 // delete uploaded files
 app.delete("/uploads/", function (req, res) {
     data = {};
-
-    res.send(data);
+    save(res, data);
 });
 
 // delete uploaded files
-app.delete("/uploads/:key", function (req, res) {
-    if (data[req.params.key]) {
-        delete data[req.params.key];
-    }
+app.delete("/vin/:vin", function (req, res) {
+    var key = Object.keys(data)
+        .map(function (key) {
+            return data[key];
+        })
+        .filter(function (item) {
+            return item.vin === req.params.vin;
+        })
+        .reduce(function (memo, item) {
+            return item.folder;
+        }, "");
 
-    res.send(data);
+    delete data[key];
+
+    save(res, data);
 });
-
 
 start();
 
-
-
-
 function saveData(req, res) {
-    fs.writeFile("data.json", JSON.stringify(data), function (err) {
-        if (err) {
-            res.send("error saving data.json");
-        }
-        res.redirect("back");
-    });
-
+    save(res, data);
 }
+
 
 function multipart() {
     return multer({
         dest: "./uploads",
-        rename: function (fieldname, filename) {
+        rename: function (fieldname, filename, req) {
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
-            var changedDest = path.join(dest, req.query.key);
+            var changedDest = path.join(dest, req.body.key || req.query.key);
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
             }
             return changedDest;
         },
         onFileUploadComplete: function (file, req) {
-            console.log(req.query);
-            console.log(req.body);
-            if (!data[req.query.key]) {
-                data[req.query.key] = {
-                    vin: req.query.vin,
-                    folder: req.query.key,
-                    time: req.query.time,
+            if (!data[req.body.key || req.query.key]) {
+                data[req.body.key || req.query.key] = {
+                    vin: req.body.vin || req.query.vin,
+                    folder: req.body.key || req.query.key,
+                    time: req.body.time || req.query.time,
                     images: []
                 };
             }
-            data[req.query.key].images.push(path.basename(file.path));
+            data[req.body.key || req.query.key].images.push(path.basename(file.path));
         }
     });
 }
@@ -127,3 +144,25 @@ function startServer() {
         console.log("App listening at http://%s:%s", host, port);
     });
 }
+
+function sortByTimestamp(a, b) {
+    if (data[a].time < data[b].time) {
+        return -1;
+    }
+    if (data[a].time > data[b].time) {
+        return 1;
+    }
+    // a must be equal to b
+    return 0;
+}
+
+function save(res, obj) {
+    fs.writeFile("data.json", JSON.stringify(obj || {}), function (err) {
+        if (err) {
+            res.status(500).send("error saving data.json");
+        }
+        res.send(obj);
+    });
+}
+
+
