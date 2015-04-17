@@ -34,12 +34,19 @@ app.get("/", function (req, res) {
     res.sendFile(__dirname + "/form.html");
 });
 
+
 // get uploaded files
 app.get("/uploads/", function (req, res) {
     res.send(Object.keys(data).sort(sortByTimestamp).map(function (item) {
         return data[item];
     }));
 });
+// delete uploaded files
+app.delete("/uploads/", function (req, res) {
+    data = {};
+    save(res, data);
+});
+
 
 app.get("/vin/:vin", function (req, res) {
     res.send(Object.keys(data)
@@ -50,6 +57,23 @@ app.get("/vin/:vin", function (req, res) {
             return item.vin === req.params.vin;
         }
     ));
+});
+
+app.delete("/vin/:vin", function (req, res) {
+    var key = Object.keys(data)
+        .map(function (key) {
+            return data[key];
+        })
+        .filter(function (item) {
+            return item.vin === req.params.vin;
+        })
+        .reduce(function (memo, item) {
+            return item.key;
+        }, "");
+
+    delete data[key];
+
+    save(res, data);
 });
 
 app.get("/key/:key", function (req, res) {
@@ -63,27 +87,8 @@ app.get("/key/:key", function (req, res) {
     ));
 });
 
-// delete uploaded files
-app.delete("/uploads/", function (req, res) {
-    data = {};
-    save(res, data);
-});
-
-// delete uploaded files
-app.delete("/vin/:vin", function (req, res) {
-    var key = Object.keys(data)
-        .map(function (key) {
-            return data[key];
-        })
-        .filter(function (item) {
-            return item.vin === req.params.vin;
-        })
-        .reduce(function (memo, item) {
-            return item.folder;
-        }, "");
-
+app.delete("/key/:key", function (req, res) {
     delete data[key];
-
     save(res, data);
 });
 
@@ -111,7 +116,7 @@ function multipart() {
             if (!data[req.body.key || req.query.key]) {
                 data[req.body.key || req.query.key] = {
                     vin: req.body.vin || req.query.vin,
-                    folder: req.body.key || req.query.key,
+                    key: req.body.key || req.query.key,
                     time: req.body.time || req.query.time,
                     images: []
                 };
