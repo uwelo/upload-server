@@ -134,10 +134,11 @@ function start() {
 
         try {
             data = JSON.parse(filedata);
-            startServer();
         } catch (e) {
-            console.log("error parsing data.json", e);
+            fs.writeFileSync("data.json", "{}");
+            data = {};
         }
+        startServer();
     });
 }
 
