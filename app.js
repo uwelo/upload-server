@@ -47,7 +47,12 @@ app.get("/", function (req, res) {
 // get uploaded files
 app.get("/uploads/", function (req, res) {
     res.send(Object.keys(data).sort(sortByTimestamp).map(function (item) {
-        data[item].time = moment.duration(-1, data[item].time).humanize(true);
+        var now = moment();
+        var uploaded = moment(Number(data[item].time));
+
+
+        data[item].time = uploaded.from(now);
+
         return data[item];
     }));
 });
