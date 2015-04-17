@@ -48,7 +48,7 @@ app.get("/", function (req, res) {
 app.get("/uploads/", function (req, res) {
     res.send(Object.keys(data).sort(sortByTimestamp).map(function (item) {
         var now = moment();
-        var uploaded = moment(Number(data[item].time));
+        var uploaded = moment(Number(data[item].timestamp));
 
 
         data[item].time = uploaded.from(now);
@@ -135,7 +135,7 @@ function multipart() {
                 data[req.body.key || req.query.key] = {
                     vin: req.body.vin || req.query.vin,
                     key: req.body.key || req.query.key,
-                    time: req.body.time || req.query.time,
+                    timestamp: req.body.timestamp || req.query.timestamp,
                     images: []
                 };
             }
