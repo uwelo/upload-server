@@ -9,6 +9,7 @@
   "author": "uloydl <uloydl@team.mobile.de>",
   "license": "BSD-2-Clause",
   "dependencies": {
+    "bluebird": "^2.9.24",
     "body-parser": "^1.12.2",
     "connect-busboy": "0.0.2",
     "express": "^4.12.3",

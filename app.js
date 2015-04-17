@@ -1,3 +1,4 @@
+/*global -Promise */
 /*jshint -W024 */
 var express = require("express");
 var bodyParser = require("body-parser");
@@ -6,6 +7,8 @@ var fs = require("fs");
 var path = require("path");
 var app = express();
 var moment = require("moment");
+var Promise = require("bluebird");
+Promise.promisifyAll(fs);
 var data = {};
 
 moment.locale("de");
@@ -26,7 +29,13 @@ app.use(function(req, res, next) {
 
 // multipart upload
 app.use(multipart());
-app.post("/upload", saveData);
+app.post("/upload", function (req, res) {
+    save(data).then(function () {
+        res.send(data);
+    }).catch(function () {
+        res.status(500).send("error saving data.json");
+    });
+});
 
 
 // index file
@@ -38,6 +47,7 @@ app.get("/", function (req, res) {
 // get uploaded files
 app.get("/uploads/", function (req, res) {
     res.send(Object.keys(data).sort(sortByTimestamp).map(function (item) {
+        data[item].time = moment.duration(-1, data[item].time).humanize(true);
         return data[item];
     }));
 });
@@ -73,7 +83,11 @@ app.delete("/vin/:vin", function (req, res) {
 
     delete data[key];
 
-    save(res, data);
+    save(data).then(function () {
+        res.send(data);
+    }).catch(function () {
+        res.status(500).send("error saving data.json");
+    });
 });
 
 app.get("/key/:key", function (req, res) {
@@ -89,15 +103,14 @@ app.get("/key/:key", function (req, res) {
 
 app.delete("/key/:key", function (req, res) {
     delete data[req.params.key];
-    save(res, data);
+    save(data).then(function () {
+        res.send(data);
+    }).catch(function () {
+        res.status(500).send("error saving data.json");
+    });
 });
 
 start();
-
-function saveData(req, res) {
-    save(res, data);
-}
-
 
 function multipart() {
     return multer({
@@ -162,13 +175,8 @@ function sortByTimestamp(a, b) {
     return 0;
 }
 
-function save(res, obj) {
-    fs.writeFile("data.json", JSON.stringify(obj || {}), function (err) {
-        if (err) {
-            res.status(500).send("error saving data.json");
-        }
-        res.send(obj);
-    });
+function save(obj) {
+    return fs.writeFileAsync("data.json", JSON.stringify(obj || {}));
 }
 
 
