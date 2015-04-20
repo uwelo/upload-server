@@ -120,26 +120,30 @@ start();
 function multipart() {
     return multer({
         dest: "./uploads",
-        rename: function (fieldname, filename, req) {
+        rename: function (fieldname, filename) {
             return filename.replace(/\W+/g, "-").toLowerCase() + Date.now();
         },
         changeDest: function(dest, req) {
-            var changedDest = path.join(dest, req.body.key || req.query.key);
+            var changedDest = path.join(dest, req.body.key || "");
             if (!fs.existsSync(changedDest)) {
                 fs.mkdirSync(changedDest);
             }
             return changedDest;
         },
         onFileUploadComplete: function (file, req) {
-            if (!data[req.body.key || req.query.key]) {
-                data[req.body.key || req.query.key] = {
-                    vin: req.body.vin || req.query.vin,
-                    key: req.body.key || req.query.key,
-                    timestamp: req.body.timestamp || req.query.timestamp,
+            if (!req.body.key) {
+                return;
+            }
+
+            if (!data[req.body.key]) {
+                data[req.body.key] = {
+                    vin: req.body.vin,
+                    key: req.body.key,
+                    timestamp: req.body.timestamp,
                     images: []
                 };
             }
-            data[req.body.key || req.query.key].images.push(path.basename(file.path));
+            data[req.body.key].images.push(path.basename(file.path));
         }
     });
 }

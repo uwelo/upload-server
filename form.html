@@ -1,32 +1,34 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="APP">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>file upload</title>
+    <title>File Upload Test</title>
 </head>
 
 <body>
-    <form method="post" action="upload" enctype="multipart/form-data">
-        <input type="file" name="fileUploaded" multiple>
-        <input id="submit" type="submit">
+    <form method="POST" action="upload" enctype="multipart/form-data">
+        <p><input id="vin" name="vin" type="text" value="" placeholder="VIN"></p>
+        <p><input id="timestamp" type="hidden" name="timestamp"></p>
+        <p><input id="key" type="hidden" name="key"></p>
+        <p><input type="file" name="fileUploaded" multiple></p>
+        <p><button id="submit" type="submit">Upload</button></p>
     </form>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script>
-        function uid(len) {
-            len = len || 7;
-            return Math.random().toString(35).substr(2, len);
-        };
-
-        var params = [];
-
-        params.push("vin=" + uid(15));
-        params.push("key=" + uid(10));
-        params.push("timestamp=" + Date.now());
-
+        function generateUUID(){
+            var d = new Date().getTime();
+            return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+                var r = (d + Math.random()*16)%16 | 0;
+                d = Math.floor(d/16);
+                return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+            });
+        }
 
         $("#submit").on("click", function () {
-            $("form").attr("action", $("form").attr("action") + "?" + params.join("&"));
+            $("#timestamp").val(new Date().getTime());
+            $("#key").val(generateUUID());
+            $("form").submit();
         });
     </script>
  </body>
